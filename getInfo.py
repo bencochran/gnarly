@@ -1,0 +1,45 @@
+from mod_python import apache
+import sys
+import MySQLdb
+sys.path.append('/home/reldnahcire/nonPublicDir/') #put the database connection info somewhere.py
+import dbConstants
+
+def getConnection():
+	db = MySQLdb.connect(host = dbConstants.host,
+		user = dbConstants.user, passwd = dbConstants.pw,
+		db = dbConstants.database)
+	db.set_character_set('utf8')
+        cursor = db.cursor()
+        cursor.execute('SET NAMES utf8')
+        cursor.execute('SET CHARACTER SET utf8')
+        cursor.execute('SET character_set_connection=utf8')
+        return db
+
+def gps(database, buildingName):
+	"""A method to hopefully get information out of the sql database and print it on screen.
+	"""
+	query = "SELECT * FROM landmarkTable WHERE name = '%s'" % buildingName
+	database.query(query)
+	result = database.store_result()
+	rowSet = result.fetch_row(maxrows=0, how=1)
+	lat = 0
+	long = 0
+	lat = rowSet[0]['latitude']
+	long = rowSet[0]['longitude']
+	#return rowSet
+	return (lat, long)
+
+def CarletonBuildings(req, lat='0',long='0',maxLandmarks='10'):
+	#maxLandmarks = int(maxLandmarks)
+	#lat = float(lat)
+	#long = float(long)
+	return "got it"
+
+
+def CarletonBuildingsCall(database, latitude, longitude, maxlandmarks):
+	pass
+
+if __name__ == '__main__':
+	db = getConnection()
+	answer = gps(db, 'Sayles-Hill')
+	print answer
