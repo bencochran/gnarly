@@ -15,9 +15,10 @@ def getConnection():
         cursor.execute('SET character_set_connection=utf8')
         return db
 
-def gps(database, buildingName):
+def gps(req, database, buildingName):
 	"""A method to hopefully get information out of the sql database and print it on screen.
 	"""
+	buildingName = MySQLdb.escape_string(buildingName)
 	query = "SELECT * FROM landmarkTable WHERE name = '%s'" % buildingName
 	database.query(query)
 	result = database.store_result()
@@ -26,13 +27,25 @@ def gps(database, buildingName):
 	long = 0
 	lat = rowSet[0]['latitude']
 	long = rowSet[0]['longitude']
-	#return rowSet
-	return (lat, long)
+	return "The building you asked for, %s, is at latitude %f and longitude %f" % (buildingName, lat, long)
 
 def CarletonBuildings(req, lat='0',long='0',maxLandmarks='10'):
-	#maxLandmarks = int(maxLandmarks)
-	#lat = float(lat)
-	#long = float(long)
+	"""If values aren't numbers, assumes 10, a number we discussed
+	and that you are in Memorial Hall, since you can't pass decent GPS
+	coordinates"""
+
+	try:
+		maxLandmarks = int(maxLandmarks)
+	except ValueError:
+		maxLandmarks = 10
+	try:
+		lat = float(lat)
+	except ValueError:
+		lat = 44.4600348119 
+	try:
+		long = float(long)
+	except:
+		long = -93.1517833713
 	return "got it"
 
 
