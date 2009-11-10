@@ -15,9 +15,10 @@ def getConnection():
         cursor.execute('SET character_set_connection=utf8')
         return db
 
-def gps(req, database, buildingName):
+def gps(req, buildingName='Sayles-Hill'):
 	"""A method to hopefully get information out of the sql database and print it on screen.
 	"""
+	database = getConnection()
 	buildingName = MySQLdb.escape_string(buildingName)
 	query = "SELECT * FROM landmarkTable WHERE name = '%s'" % buildingName
 	database.query(query)
