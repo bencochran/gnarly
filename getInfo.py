@@ -47,7 +47,12 @@ def CarletonBuildings(req, lat='0',long='0',maxLandmarks='10'):
 		long = float(long)
 	except:
 		long = -93.1517833713
-	return "got it"
+	
+	query = "SELECT landmarkTable.*, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, CarletonBuildings.landmarkID, landmarkTable.name FROM landmarkTable JOIN CarletonBuildings IN landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
+
+	
+	
+	return "This is the query: \n" + query
 
 
 def CarletonBuildingsCall(database, latitude, longitude, maxlandmarks):
