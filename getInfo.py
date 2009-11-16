@@ -1,4 +1,4 @@
-#from mod_python import apache
+from mod_python import apache
 import sys
 import MySQLdb
 sys.path.append('/home/reldnahcire/nonPublicDir/') #put the database connection info somewhere.py
