@@ -1,4 +1,4 @@
-from mod_python import apache
+#from mod_python import apache
 import sys
 import MySQLdb
 sys.path.append('/home/reldnahcire/nonPublicDir/') #put the database connection info somewhere.py
@@ -34,7 +34,8 @@ def CarletonBuildings(req, lat='0',long='0',maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discussed
 	and that you are in Memorial Hall, since you can't pass decent GPS
 	coordinates"""
-
+	resultsList = []
+	database = getConnection()
 	try:
 		maxLandmarks = int(maxLandmarks)
 	except ValueError:
@@ -49,15 +50,29 @@ def CarletonBuildings(req, lat='0',long='0',maxLandmarks='10'):
 		long = -93.1517833713
 	
 	query = "SELECT CarletonBuildings.landmarkID, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
-	
-	
-	return "This is the query: \n" + query
+	database.query(query)
+	result = database.store_result()
+	rowSet = result.fetch_row(0,1)
+	currentLandmark = []
+	for dict in rowSet:
+		currentLandmark.append(int(dict['landmarkID']))
+		currentLandmark.append(dict['name'])
+		currentLandmark.append(float(dict['distance']))
+		currentLandmark.append(float(dict['latitude']))
+		currentLandmark.append(float(dict['longitude']))
+		resultsList.append(currentLandmark)
+		currentLandmark = []
+	return resultsList
 
+def LocalCarletonBuildings(database, lat, long, maxLandmarks):
+	query = "SELECT CarletonBuildings.landmarkID, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
+	database.query(query)
+	result = database.store_result()
+	rowSet = result.fetch_row(maxrows=0, how=1)
+	return rowSet
 
-def CarletonBuildingsCall(database, latitude, longitude, maxlandmarks):
-	pass
 
 if __name__ == '__main__':
 	db = getConnection()
-	answer = gps(db, 'Sayles-Hill')
+	answer = LocalCarletonBuildings(db, 44.4600348119,-93.1517833713,10)
 	print answer
