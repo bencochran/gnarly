@@ -3,6 +3,9 @@ import sys
 import MySQLdb
 sys.path.append('/home/reldnahcire/nonPublicDir/') #put the database connection info somewhere.py
 import dbConstants
+import json
+
+
 
 def getConnection():
 	db = MySQLdb.connect(host = dbConstants.host,
@@ -49,27 +52,46 @@ def CarletonBuildings(req, lat='0',long='0',maxLandmarks='10'):
 	except:
 		long = -93.1517833713
 	
-	query = "SELECT CarletonBuildings.landmarkID, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
-	database.query(query)
-	result = database.store_result()
-	rowSet = result.fetch_row(0,1)
-	currentLandmark = []
-	for dict in rowSet:
-		currentLandmark.append(int(dict['landmarkID']))
-		currentLandmark.append(dict['name'])
-		currentLandmark.append(float(dict['distance']))
-		currentLandmark.append(float(dict['latitude']))
-		currentLandmark.append(float(dict['longitude']))
-		resultsList.append(currentLandmark)
-		currentLandmark = []
-	return resultsList
-
-def LocalCarletonBuildings(database, lat, long, maxLandmarks):
-	query = "SELECT CarletonBuildings.landmarkID, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
+	query = "SELECT CarletonBuildings.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
 	database.query(query)
 	result = database.store_result()
 	rowSet = result.fetch_row(maxrows=0, how=1)
-	return rowSet
+	currentLandmark = {}
+	for dict in rowSet:
+		currentLandmark['ID'] = int(dict['id'])
+		currentLandmark['name'] = dict['name']
+		currentLandmark['distance'] = float(dict['distance'])
+		currentLandmark['latitude'] = float(dict['latitude'])
+		currentLandmark['longitude'] = float(dict['longitude'])
+		currentLandmark['summary'] = dict['summaryString']
+		currentLandmark['imageURL'] = dict['urlToImage']
+		currentLandmark['description'] = dict['description']
+		currentLandmark['yearBuilt'] = dict['yearBuilt']
+		resultsList.append(currentLandmark)
+		currentLandmark = {}
+	answer = json.dumps(resultsList)
+	return answer
+
+def LocalCarletonBuildings(database, lat, long, maxLandmarks):
+	query = "SELECT CarletonBuildings.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
+	database.query(query)
+	result = database.store_result()
+	rowSet = result.fetch_row(maxrows=0, how=1)
+	resultsList = []
+	currentLandmark = {}
+	for dict in rowSet:
+		currentLandmark['ID'] = int(dict['id'])
+                currentLandmark['name'] = dict['name']
+                currentLandmark['distance'] = float(dict['distance'])
+                currentLandmark['latitude'] = float(dict['latitude'])
+                currentLandmark['longitude'] = float(dict['longitude'])
+                currentLandmark['summary'] = dict['summaryString']
+                currentLandmark['imageURL'] = dict['urlToImage']
+                currentLandmark['description'] = dict['description']
+                currentLandmark['yearBuilt'] = dict['yearBuilt']
+                resultsList.append(currentLandmark)
+		currentLandmark = {}
+	return json.dumps(resultsList)
 
 
 if __name__ == '__main__':
