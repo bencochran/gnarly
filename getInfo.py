@@ -33,7 +33,7 @@ def gps(req, buildingName='Sayles-Hill'):
 	long = rowSet[0]['longitude']
 	return "The building you asked for, %s, is at latitude %f and longitude %f" % (buildingName, lat, long)
 
-def CarletonBuildings(req, lat='0',long='0',maxLandmarks='10'):
+def CarletonBuildings(req, lat='0',lon='0',maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discussed
 	and that you are in Memorial Hall, since you can't pass decent GPS
 	coordinates"""
@@ -48,11 +48,11 @@ def CarletonBuildings(req, lat='0',long='0',maxLandmarks='10'):
 	except ValueError:
 		lat = 44.4600348119 
 	try:
-		long = float(long)
+		lon = float(lon)
 	except:
-		long = -93.1517833713
+		lon = -93.1517833713
 	
-	query = "SELECT CarletonBuildings.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
+	query = "SELECT CarletonBuildings.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
 	database.query(query)
 	result = database.store_result()
 	rowSet = result.fetch_row(maxrows=0, how=1)
