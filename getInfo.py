@@ -5,6 +5,8 @@ sys.path.append('/home/reldnahcire/nonPublicDir/') #put the database connection 
 import dbConstants
 import json
 
+def testServer():
+	return True
 
 
 def getConnection():
@@ -116,17 +118,10 @@ def LocalCarletonBuildings(database, lat, long, maxLandmarks):
 	resultsList = []
 	currentLandmark = {}
 	for dict in rowSet:
-		currentLandmark['ID'] = int(dict['id'])
-                currentLandmark['name'] = dict['name']
-                currentLandmark['distance'] = float(dict['distance'])
-                currentLandmark['latitude'] = float(dict['latitude'])
-                currentLandmark['longitude'] = float(dict['longitude'])
-                currentLandmark['summary'] = dict['summaryString']
-                currentLandmark['imageURL'] = dict['urlToImage']
-                currentLandmark['description'] = dict['description']
-                currentLandmark['yearBuilt'] = dict['yearBuilt']
-                resultsList.append(currentLandmark)
-		currentLandmark = {}
+		for key in dict:
+			currentLandmark[key] = dict[key]
+               		resultsList.append(currentLandmark)
+			currentLandmark = {}
 	return json.dumps(resultsList)
 
 
