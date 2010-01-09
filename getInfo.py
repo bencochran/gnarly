@@ -72,6 +72,42 @@ def CarletonBuildings(req, lat='0',lon='0',maxLandmarks='10'):
 	answer = json.dumps(resultsList)
 	return answer
 
+def DiningAreas(req, lat='0', lon='0', maxLandmarks='10'):
+	"""If values aren't numbers, assumes 10 for the value of maxLandmarks and assumes you are in memorial since you can't get decent gps there"""
+	resultsList = []
+	database = getConnection()
+	try:
+		maxLandmarks = int(maxLandmarks)
+	except ValueError:
+		maxLandmarks = 10
+	try:
+		lat = float(lat)
+	except ValueError:
+		lat = 44.4600348119
+	try:
+		lon = float(lon)
+	except ValueError:
+		lon = -93.1517833713
+
+	query = "SELECT DiningAreas.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN DiningAreas ON landmarkTable.id = DiningAreas.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	database.query(query)
+	result = database.store_result()
+	rowSet = result.fetch_row(maxrows=0, how=1)
+	currentLandmark = {}
+	for dict in rowSet:
+		currentLandmark['ID'] = int(dict['id'])
+		currentLandmark['name'] = dict['name']
+		currentLandmark['distance'] = float(dict['distance'])
+		currentLandmark['latitude'] = float(dict['latitude'])
+		currentLandmark['longitude'] = float(dict['longitude'])
+		currentLandmark['summary'] = dict['summaryString']
+		currentLandmark['menuURL'] = dict['urlToMenu']
+		currentLandmark['description'] = dict['description']
+		resultsList.append(currentLandmark)
+		currentLandmark = {}
+	answer = json.dumps(resultsList)
+	return answer
+
 def LocalCarletonBuildings(database, lat, long, maxLandmarks):
 	query = "SELECT CarletonBuildings.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
 	database.query(query)
