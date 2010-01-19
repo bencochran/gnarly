@@ -35,6 +35,45 @@ def gps(req, buildingName='Sayles-Hill'):
 	long = rowSet[0]['longitude']
 	return "The building you asked for, %s, is at latitude %f and longitude %f" % (buildingName, lat, long)
 
+
+def variableSetup(latitude, longitude, maxLandmarks):
+	try:
+		maxLandmarks = int(maxLandmarks)
+	except ValueError:
+		maxLandmarks = 10
+	try:
+		latitude = float(latitude)
+	except ValueError:
+		latitude = 44.4600348119
+	try:
+		longitude = float(longitude)
+	except ValueError:
+		longitude = -93.1517833713
+
+	return latitude, longitude, maxLandmarks
+
+
+def StudentHousing(req, lat='0', lon='0', maxLandmarks='10'):
+	"""If values aren't numbers, assumes 10, a number we discused
+	and that you are in Memorial Hall, since you can't pass decent GPS
+	coordinates"""
+	resultsList = []
+	database = getConnection()
+	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
+	query = "SELECT StudentHousing.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN StudentHousing on landmarkTable.id = StudentHousing.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	database.query(query)
+	result = database.store_result()
+	rowSet = result.fetch_row(maxrows=0, how=1)
+	currentLandmark = {}
+	for dict in rowSet:
+		for key in dict:
+			currentLandmark[key] = dict[key]
+		resultsList.append(currentLandmark)
+		currentLandmark = {}
+	answer = json.dumps(resultsList)
+	return answer
+
+
 def CarletonBuildings(req, lat='0',lon='0',maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discussed
 	and that you are in Memorial Hall, since you can't pass decent GPS
@@ -127,5 +166,6 @@ def LocalCarletonBuildings(database, lat, long, maxLandmarks):
 
 if __name__ == '__main__':
 	db = getConnection()
-	answer = LocalCarletonBuildings(db, 44.4600348119,-93.1517833713,10)
-	print answer
+	StudentHousing(db, 'a', 'b', 'c')
+	#answer = LocalCarletonBuildings(db, 44.4600348119,-93.1517833713,10)
+	#print answer
