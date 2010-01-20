@@ -120,7 +120,7 @@ def DiningAreas(req, lat='0', lon='0', maxLandmarks='10'):
 	database = getConnection()
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
 
-	query = "SELECT DiningAreas.summaryString, DiningAreas.urlToMenu, DiningAreas.description, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN DiningAreas ON landmarkTable.id = DiningAreas.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	query = "SELECT DiningAreas.summaryString, DiningAreas.urlToMenu, DiningAreas.description, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN DiningAreas ON landmarkTable.id = DiningAreas.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
 	database.query(query)
 	result = database.store_result()
 	rowSet = result.fetch_row(maxrows=0, how=1)
