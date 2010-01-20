@@ -83,8 +83,8 @@ def SportingArenas(req, lat='0', lon='0', maxLandmarks='10'):
         coordinates"""
 	database = getConnection()
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT SportingArenas.summaryString, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landamrkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.id = StudentHousing.landmarkID ORDER BY distance ASC Limit %d" % (lat, lon, maxLandmarks)
-	answer = processQuery(db, query)
+	query = "SELECT SportingArenas.summaryString, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.id = SportingArenas.landmarkID ORDER BY distance ASC Limit %d" % (lat, lon, maxLandmarks)
+	answer = processQuery(database, query)
 	return answer
 
 def CarletonBuildings(req, lat='0',lon='0',maxLandmarks='10'):
