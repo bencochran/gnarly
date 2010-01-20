@@ -57,12 +57,16 @@ def StudentHousing(req, lat='0', lon='0', maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discused
 	and that you are in Memorial Hall, since you can't pass decent GPS
 	coordinates"""
-	resultsList = []
 	database = getConnection()
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT StudentHousing.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN StudentHousing on landmarkTable.id = StudentHousing.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
-	database.query(query)
-	result = database.store_result()
+	query = "SELECT StudentHousing.summaryString, StudentHousing.urlToImage, StudentHousing.description, StudentHousing.yearBuilt, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN StudentHousing on landmarkTable.id = StudentHousing.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	answer = processQuery(database, query)
+	return answer
+
+def processQuery(db, query):
+	resultsList = []
+	db.query(query)
+	result = db.store_result()
 	rowSet = result.fetch_row(maxrows=0, how=1)
 	currentLandmark = {}
 	for dict in rowSet:
@@ -73,6 +77,15 @@ def StudentHousing(req, lat='0', lon='0', maxLandmarks='10'):
 	answer = json.dumps(resultsList)
 	return answer
 
+def SportingArenas(req, lat='0', lon='0', maxLandmarks='10'):
+	"""If values aren't numbers, assumes 10, a number we discused
+        and that you are in Memorial Hall, since you can't pass decent GPS
+        coordinates"""
+	database = getConnection()
+	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
+	query = "SELECT SportingArenas.summaryString, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landamrkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.id = StudentHousing.landmarkID ORDER BY distance ASC Limit %d" % (lat, lon, maxLandmarks)
+	answer = processQuery(db, query)
+	return answer
 
 def CarletonBuildings(req, lat='0',lon='0',maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discussed
@@ -80,20 +93,8 @@ def CarletonBuildings(req, lat='0',lon='0',maxLandmarks='10'):
 	coordinates"""
 	resultsList = []
 	database = getConnection()
-	try:
-		maxLandmarks = int(maxLandmarks)
-	except ValueError:
-		maxLandmarks = 10
-	try:
-		lat = float(lat)
-	except ValueError:
-		lat = 44.4600348119 
-	try:
-		lon = float(lon)
-	except:
-		lon = -93.1517833713
-	
-	query = "SELECT CarletonBuildings.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
+	query = "SELECT CarletonBuildings.summaryString, CarletonBuildings.urlToImage, CarletonBuildings.description, CarletonBuildings.yearBuilt, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
 	database.query(query)
 	result = database.store_result()
 	rowSet = result.fetch_row(maxrows=0, how=1)
@@ -117,20 +118,9 @@ def DiningAreas(req, lat='0', lon='0', maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10 for the value of maxLandmarks and assumes you are in memorial since you can't get decent gps there"""
 	resultsList = []
 	database = getConnection()
-	try:
-		maxLandmarks = int(maxLandmarks)
-	except ValueError:
-		maxLandmarks = 10
-	try:
-		lat = float(lat)
-	except ValueError:
-		lat = 44.4600348119
-	try:
-		lon = float(lon)
-	except ValueError:
-		lon = -93.1517833713
+	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
 
-	query = "SELECT DiningAreas.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN DiningAreas ON landmarkTable.id = DiningAreas.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	query = "SELECT DiningAreas.summaryString, DiningAreas.urlToMenu, DiningAreas.description, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN DiningAreas ON landmarkTable.id = DiningAreas.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
 	database.query(query)
 	result = database.store_result()
 	rowSet = result.fetch_row(maxrows=0, how=1)
@@ -148,24 +138,3 @@ def DiningAreas(req, lat='0', lon='0', maxLandmarks='10'):
 		currentLandmark = {}
 	answer = json.dumps(resultsList)
 	return answer
-
-def LocalCarletonBuildings(database, lat, long, maxLandmarks):
-	query = "SELECT CarletonBuildings.*, landmarkTable.name, GeoDistMi(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, long, maxLandmarks)
-	database.query(query)
-	result = database.store_result()
-	rowSet = result.fetch_row(maxrows=0, how=1)
-	resultsList = []
-	currentLandmark = {}
-	for dict in rowSet:
-		for key in dict:
-			currentLandmark[key] = dict[key]
-               		resultsList.append(currentLandmark)
-			currentLandmark = {}
-	return json.dumps(resultsList)
-
-
-if __name__ == '__main__':
-	db = getConnection()
-	StudentHousing(db, 'a', 'b', 'c')
-	#answer = LocalCarletonBuildings(db, 44.4600348119,-93.1517833713,10)
-	#print answer
