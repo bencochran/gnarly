@@ -59,7 +59,7 @@ def StudentHousing(req, lat='0', lon='0', maxLandmarks='10'):
 	coordinates"""
 	database = getConnection()
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT StudentHousing.summaryString, StudentHousing.urlToImage, StudentHousing.description, StudentHousing.yearBuilt, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN StudentHousing on landmarkTable.id = StudentHousing.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	query = "SELECT StudentHousing.summaryString, StudentHousing.urlToImage, StudentHousing.description, StudentHousing.yearBuilt, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN StudentHousing on landmarkTable.ID = StudentHousing.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
 
@@ -83,7 +83,7 @@ def SportingArenas(req, lat='0', lon='0', maxLandmarks='10'):
         coordinates"""
 	database = getConnection()
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT SportingArenas.summaryString, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.id = SportingArenas.landmarkID ORDER BY distance ASC Limit %d" % (lat, lon, maxLandmarks)
+	query = "SELECT SportingArenas.summaryString, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.ID = SportingArenas.landmarkID ORDER BY distance ASC Limit %d" % (lat, lon, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
 
@@ -91,50 +91,17 @@ def CarletonBuildings(req, lat='0',lon='0',maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discussed
 	and that you are in Memorial Hall, since you can't pass decent GPS
 	coordinates"""
-	resultsList = []
 	database = getConnection()
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT CarletonBuildings.summaryString, CarletonBuildings.urlToImage, CarletonBuildings.description, CarletonBuildings.yearBuilt, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.id = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
-	database.query(query)
-	result = database.store_result()
-	rowSet = result.fetch_row(maxrows=0, how=1)
-	currentLandmark = {}
-	for dict in rowSet:
-		currentLandmark['ID'] = int(dict['id'])
-		currentLandmark['name'] = dict['name']
-		currentLandmark['distance'] = float(dict['distance'])
-		currentLandmark['latitude'] = float(dict['latitude'])
-		currentLandmark['longitude'] = float(dict['longitude'])
-		currentLandmark['summary'] = dict['summaryString']
-		currentLandmark['imageURL'] = dict['urlToImage']
-		currentLandmark['description'] = dict['description']
-		currentLandmark['yearBuilt'] = dict['yearBuilt']
-		resultsList.append(currentLandmark)
-		currentLandmark = {}
-	answer = json.dumps(resultsList)
+	query = "SELECT CarletonBuildings.summary, CarletonBuildings.imageURL, CarletonBuildings.description, CarletonBuildings.yearBuilt, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.ID = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	answer = processQuery(database, query)
 	return answer
 
 def DiningAreas(req, lat='0', lon='0', maxLandmarks='10'):
-	"""If values aren't numbers, assumes 10 for the value of maxLandmarks and assumes you are in memorial since you can't get decent gps there"""
-	resultsList = []
+	"""If values aren't numbers, assumes 10 for the value of maxLandmarks and assumes
+	 you are in memorial since you can't get decent gps there"""
 	database = getConnection()
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-
-	query = "SELECT DiningAreas.summaryString, DiningAreas.urlToMenu, DiningAreas.description, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN DiningAreas ON landmarkTable.id = DiningAreas.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
-	database.query(query)
-	result = database.store_result()
-	rowSet = result.fetch_row(maxrows=0, how=1)
-	currentLandmark = {}
-	for dict in rowSet:
-		currentLandmark['ID'] = int(dict['id'])
-		currentLandmark['name'] = dict['name']
-		currentLandmark['distance'] = float(dict['distance'])
-		currentLandmark['latitude'] = float(dict['latitude'])
-		currentLandmark['longitude'] = float(dict['longitude'])
-		currentLandmark['summary'] = dict['summaryString']
-		currentLandmark['menuURL'] = dict['urlToMenu']
-		currentLandmark['description'] = dict['description']
-		resultsList.append(currentLandmark)
-		currentLandmark = {}
-	answer = json.dumps(resultsList)
+	query = "SELECT DiningAreas.summary, DiningAreas.menuURL, DiningAreas.description, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN DiningAreas ON landmarkTable.ID = DiningAreas.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	answer = processQuery(database, query)
 	return answer
