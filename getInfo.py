@@ -78,7 +78,7 @@ def Carleton(req, lat='0',lon='0',maxLandmarks='10'):
 	coordinates"""
 	database = getConnection() 
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT Carleton.summary, Carleton.imageURL, Carleton.description, Carleton.yearBuilt, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN Carleton ON landmarkTable.ID = Carleton.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	query = "SELECT Carleton.summary, Carleton.imageURL, Carleton.description, Carleton.yearBuilt, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, -%f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN Carleton where landmarkTable.id = Carleton.landmarkID AND (Carleton.landmarkID in (SELECT landmarkID FROM CarletonVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM CarletonVotes where userID = 1) OR landmarkTable.id < 94) ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
 	
