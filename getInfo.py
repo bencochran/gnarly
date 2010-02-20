@@ -5,9 +5,6 @@ sys.path.append('/home/reldnahcire/nonPublicDir/') #put the database connection 
 import dbConstants
 import json
 
-def testServer():
-	return True
-
 
 def getConnection():
 	db = MySQLdb.connect(host = dbConstants.host,
@@ -19,23 +16,7 @@ def getConnection():
         cursor.execute('SET CHARACTER SET utf8')
         cursor.execute('SET character_set_connection=utf8')
         return db
-
-def gps(req, buildingName='Sayles-Hill'):
-	"""A method to hopefully get information out of the sql database and print it on screen.
-	"""
-	database = getConnection()
-	buildingName = MySQLdb.escape_string(buildingName)
-	query = "SELECT * FROM landmarkTable WHERE name = '%s'" % buildingName
-	database.query(query)
-	result = database.store_result()
-	rowSet = result.fetch_row(maxrows=0, how=1)
-	lat = 0
-	long = 0
-	lat = rowSet[0]['latitude']
-	long = rowSet[0]['longitude']
-	return "The building you asked for, %s, is at latitude %f and longitude %f" % (buildingName, lat, long)
-
-
+        
 def variableSetup(latitude, longitude, maxLandmarks):
 	try:
 		maxLandmarks = int(maxLandmarks)
@@ -52,17 +33,6 @@ def variableSetup(latitude, longitude, maxLandmarks):
 
 	return latitude, longitude, maxLandmarks
 
-
-def StudentHousing(req, lat='0', lon='0', maxLandmarks='10'):
-	"""If values aren't numbers, assumes 10, a number we discused
-	and that you are in Memorial Hall, since you can't pass decent GPS
-	coordinates"""
-	database = getConnection()
-	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT StudentHousing.summaryString, StudentHousing.urlToImage, StudentHousing.description, StudentHousing.yearBuilt, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN StudentHousing on landmarkTable.ID = StudentHousing.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
-	answer = processQuery(database, query)
-	return answer
-
 def processQuery(db, query):
 	resultsList = []
 	db.query(query)
@@ -76,6 +46,21 @@ def processQuery(db, query):
 		currentLandmark = {}
 	answer = json.dumps(resultsList)
 	return answer
+	
+def gps(req, buildingName='Sayles-Hill'):
+	"""A method to hopefully get information out of the sql database and print it on screen.
+	"""
+	database = getConnection()
+	buildingName = MySQLdb.escape_string(buildingName)
+	query = "SELECT * FROM landmarkTable WHERE name = '%s'" % buildingName
+	database.query(query)
+	result = database.store_result()
+	rowSet = result.fetch_row(maxrows=0, how=1)
+	lat = 0
+	long = 0
+	lat = rowSet[0]['latitude']
+	long = rowSet[0]['longitude']
+	return "The building you asked for, %s, is at latitude %f and longitude %f" % (buildingName, lat, long)
 
 def SportingArenas(req, lat='0', lon='0', maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discused
@@ -87,21 +72,21 @@ def SportingArenas(req, lat='0', lon='0', maxLandmarks='10'):
 	answer = processQuery(database, query)
 	return answer
 
-def CarletonBuildings(req, lat='0',lon='0',maxLandmarks='10'):
+def Carleton(req, lat='0',lon='0',maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discussed
 	and that you are in Memorial Hall, since you can't pass decent GPS
 	coordinates"""
-	database = getConnection()
+	database = getConnection() 
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT CarletonBuildings.summary, CarletonBuildings.imageURL, CarletonBuildings.description, CarletonBuildings.yearBuilt, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN CarletonBuildings ON landmarkTable.ID = CarletonBuildings.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	query = "SELECT Carleton.summary, Carleton.imageURL, Carleton.description, Carleton.yearBuilt, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN Carleton ON landmarkTable.ID = Carleton.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
-
-def DiningAreas(req, lat='0', lon='0', maxLandmarks='10'):
+	
+def Food(req, lat='0', lon='0', maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10 for the value of maxLandmarks and assumes
 	 you are in memorial since you can't get decent gps there"""
 	database = getConnection()
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT DiningAreas.summary, DiningAreas.menuURL, DiningAreas.description, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN DiningAreas ON landmarkTable.ID = DiningAreas.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	query = "SELECT Food.summary, Food.menu, Food.description, Food.imageURL, landmarkTable.name, landmarkTable.ID GeoDistM(Food.latitude, Food.longitude, %f, %f) as distance, Food.latitude, Food.longitude From Food ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
