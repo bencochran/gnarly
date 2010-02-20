@@ -87,6 +87,6 @@ def Food(req, lat='0', lon='0', maxLandmarks='10'):
 	 you are in memorial since you can't get decent gps there"""
 	database = getConnection()
 	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT Food.summary, Food.menu, Food.description, Food.imageURL, landmarkTable.name, landmarkTable.ID, GeoDistM(Food.latitude, Food.longitude, %f, %f) as distance, Food.latitude, Food.longitude From Food ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	query = "SELECT Food.summary, Food.menu, Food.description, Food.imageURL, landmarkTable.name, landmarkTable.ID, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN Food ON landmarkTable.ID = Food.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
