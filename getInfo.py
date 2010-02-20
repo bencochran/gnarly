@@ -16,8 +16,14 @@ def getConnection():
         cursor.execute('SET CHARACTER SET utf8')
         cursor.execute('SET character_set_connection=utf8')
         return db
-        
-def variableSetup(latitude, longitude, maxLandmarks):
+        		
+def variableSetup(udid, latitude, longitude, maxLandmarks):
+	
+	if len(udid) != 40:
+	    udid = 'd94954ea4c18630447be1bd357922ffe1b52a0e2'
+	
+	udid = MySQLdb.escape_string(udid)
+	udid = '\'+udid+\''
 	try:
 		maxLandmarks = int(maxLandmarks)
 	except ValueError:
@@ -31,7 +37,7 @@ def variableSetup(latitude, longitude, maxLandmarks):
 	except ValueError:
 		longitude = -93.1517833713
 
-	return latitude, longitude, maxLandmarks
+	return udid, latitude, longitude, maxLandmarks
 
 def processQuery(db, query):
 	resultsList = []
@@ -62,31 +68,31 @@ def gps(req, buildingName='Sayles-Hill'):
 	long = rowSet[0]['longitude']
 	return "The building you asked for, %s, is at latitude %f and longitude %f" % (buildingName, lat, long)
 
-def SportingArenas(req, lat='0', lon='0', maxLandmarks='10'):
+def SportingArenas(req, udid, lat='0', lon='0', maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discused
         and that you are in Memorial Hall, since you can't pass decent GPS
         coordinates"""
 	database = getConnection()
-	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT SportingArenas.summaryString, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.ID = SportingArenas.landmarkID ORDER BY distance ASC Limit %d" % (lat, lon, maxLandmarks)
+	udid, lat, lon, maxLandmarks = variableSetup(udid, lat, lon, maxLandmarks)
+	query = "SELECT SportingArenas.summaryString, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.ID = SportingArenas.landmarkID AND (SportingArenas.landmarkID in (SELECT landmarkID FROM SportingArenasVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM SportingArenasVotes where userID in (SELECT userTable.id from userTable where userTable.udid = %s)) OR landmarkTable.id < 94) ORDER BY distance ASC LIMIT %d" % (lat, lon, udid, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
 
-def Carleton(req, lat='0',lon='0',maxLandmarks='10'):
+def Carleton(req, udid = None, lat='0',lon='0',maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10, a number we discussed
 	and that you are in Memorial Hall, since you can't pass decent GPS
 	coordinates"""
 	database = getConnection() 
-	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT Carleton.summary, Carleton.imageURL, Carleton.description, Carleton.yearBuilt, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, -%f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN Carleton where landmarkTable.id = Carleton.landmarkID AND (Carleton.landmarkID in (SELECT landmarkID FROM CarletonVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM CarletonVotes where userID = 1) OR landmarkTable.id < 94) ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	udid, lat, lon, maxLandmarks = variableSetup(udid, lat, lon, maxLandmarks)
+	query = "SELECT Carleton.summary, Carleton.imageURL, Carleton.description, Carleton.yearBuilt, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN Carleton where landmarkTable.id = Carleton.landmarkID AND (Carleton.landmarkID in (SELECT landmarkID FROM CarletonVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM CarletonVotes where userID in (SELECT userTable.id from userTable where userTable.udid = %s)) OR landmarkTable.id < 94) ORDER BY distance ASC LIMIT %d" % (lat, lon, udid, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
 	
-def Food(req, lat='0', lon='0', maxLandmarks='10'):
+def Food(req, udid, lat='0', lon='0', maxLandmarks='10'):
 	"""If values aren't numbers, assumes 10 for the value of maxLandmarks and assumes
 	 you are in memorial since you can't get decent gps there"""
 	database = getConnection()
-	lat, lon, maxLandmarks = variableSetup(lat, lon, maxLandmarks)
-	query = "SELECT Food.summary, Food.menu, Food.description, Food.imageURL, landmarkTable.name, landmarkTable.ID, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN Food ON landmarkTable.ID = Food.landmarkID ORDER BY distance ASC LIMIT %d" % (lat, lon, maxLandmarks)
+	udid, lat, lon, maxLandmarks = variableSetup(udid, lat, lon, maxLandmarks)
+	query = "SELECT Food.summary, Food.menu, Food.description, Food.imageURL, landmarkTable.name, landmarkTable.ID, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN Food ON landmarkTable.ID = Food.landmarkID AND (Food.landmarkID in (SELECT landmarkID FROM FoodVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM FoodVotes where userID in (SELECT userTable.id from userTable where userTable.udid = %s)) OR landmarkTable.id < 94) ORDER BY distance ASC LIMIT %d" % (lat, lon, udid, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
