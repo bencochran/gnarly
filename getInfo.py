@@ -74,7 +74,7 @@ def SportingArenas(req, udid, lat='0', lon='0', maxLandmarks='10'):
         coordinates"""
 	database = getConnection()
 	udid, lat, lon, maxLandmarks = variableSetup(udid, lat, lon, maxLandmarks)
-	query = "SELECT SportingArenas.summary, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.ID = SportingArenas.landmarkID AND (SportingArenas.landmarkID in (SELECT landmarkID FROM SportingArenasVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM SportingArenasVotes where userID in (SELECT userTable.id from userTable where userTable.udid = %s)) OR landmarkTable.id < 94) ORDER BY distance ASC LIMIT %d" % (lat, lon, udid, maxLandmarks)
+	query = "SELECT SportingArenas.summary, SportingArenas.imageURL, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.ID, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.ID = SportingArenas.landmarkID AND (SportingArenas.landmarkID in (SELECT landmarkID FROM SportingArenasVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM SportingArenasVotes where userID in (SELECT userTable.id from userTable where userTable.udid = %s)) OR landmarkTable.id < 94) ORDER BY distance ASC LIMIT %d" % (lat, lon, udid, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
 
