@@ -19,11 +19,11 @@ def getConnection():
         		
 def variableSetup(udid, latitude, longitude, maxLandmarks):
 	
-	if len(udid) != 40:
-	    udid = 'd94954ea4c18630447be1bd357922ffe1b52a0e2'
+	#if len(udid) != 40:
+	#    udid = 'd94954ea4c18630447be1bd357922ffe1b52a0e2'
 	
 	udid = MySQLdb.escape_string(udid)
-	udid = '\'+udid+\''
+	udid = "\'"+udid+"\'"
 	try:
 		maxLandmarks = int(maxLandmarks)
 	except ValueError:
@@ -74,7 +74,7 @@ def SportingArenas(req, udid, lat='0', lon='0', maxLandmarks='10'):
         coordinates"""
 	database = getConnection()
 	udid, lat, lon, maxLandmarks = variableSetup(udid, lat, lon, maxLandmarks)
-	query = "SELECT SportingArenas.summary, SportingArenas.imageURL, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.id = SportingArenas.landmarkID AND (SportingArenas.landmarkID in (SELECT landmarkID FROM SportingArenasVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM SportingArenasVotes where userID in (SELECT userTable.id from userTable where userTable.udid = %s)) OR landmarkTable.id < 94) ORDER BY distance ASC LIMIT %d" % (lat, lon, udid, maxLandmarks)
+	query = "SELECT SportingArenas.summary, SportingArenas.imageURL, SportingArenas.scheduleURL, SportingArenas.usedBy, landmarkTable.id, landmarkTable.name, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude FROM landmarkTable JOIN SportingArenas ON landmarkTable.id = SportingArenas.landmarkID AND (SportingArenas.landmarkID in (SELECT landmarkID FROM SportingArenasVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM SportingArenasVotes where userID in (SELECT userTable.id from userTable where userTable.udid = %s))) ORDER BY distance ASC LIMIT %d" % (lat, lon, udid, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
 
@@ -93,6 +93,6 @@ def Food(req, udid, lat='0', lon='0', maxLandmarks='10'):
 	 you are in memorial since you can't get decent gps there"""
 	database = getConnection()
 	udid, lat, lon, maxLandmarks = variableSetup(udid, lat, lon, maxLandmarks)
-	query = "SELECT Food.summary, Food.menu, Food.description, Food.imageURL, landmarkTable.name, landmarkTable.id, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN Food ON landmarkTable.id = Food.landmarkID AND (Food.landmarkID in (SELECT landmarkID FROM FoodVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM FoodVotes where userID in (SELECT userTable.id from userTable where userTable.udid = %s)) OR landmarkTable.id < 94) ORDER BY distance ASC LIMIT %d" % (lat, lon, udid, maxLandmarks)
+	query = "SELECT Food.summary, Food.menu, Food.description, Food.imageURL, landmarkTable.name, landmarkTable.id, GeoDistM(landmarkTable.latitude, landmarkTable.longitude, %f, %f) as distance, landmarkTable.latitude, landmarkTable.longitude From landmarkTable JOIN Food ON landmarkTable.id = Food.landmarkID AND (Food.landmarkID in (SELECT landmarkID FROM FoodVotes Group By landmarkID HAVING COUNT(*) >2 UNION DISTINCT SELECT landmarkID FROM FoodVotes where userID in (SELECT userTable.id from userTable where userTable.udid = %s))) ORDER BY distance ASC LIMIT %d" % (lat, lon, udid, maxLandmarks)
 	answer = processQuery(database, query)
 	return answer
