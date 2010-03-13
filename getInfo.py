@@ -7,6 +7,7 @@ import json
 
 
 def getConnection():
+	"""getConnection accesses the information necesary to connect to the Gnarus DB from a secure location"""
 	db = MySQLdb.connect(host = dbConstants.host,
 		user = dbConstants.user, passwd = dbConstants.pw,
 		db = dbConstants.database)
@@ -18,7 +19,10 @@ def getConnection():
         return db
         		
 def variableSetup(udid, latitude, longitude, maxLandmarks):
-	
+	"""Converts variables to the right type.  If any of these fail has
+	default values"""
+
+	#This checks the UDID of the phone and was disabled for testing the simulator
 	#if len(udid) != 40:
 	#    udid = 'd94954ea4c18630447be1bd357922ffe1b52a0e2'
 	
@@ -40,6 +44,8 @@ def variableSetup(udid, latitude, longitude, maxLandmarks):
 	return udid, latitude, longitude, maxLandmarks
 
 def processQuery(db, query):
+	"""This function takes a database and a SQL query and returns the results
+	as a JSON formatted dictionary"""
 	resultsList = []
 	db.query(query)
 	result = db.store_result()
@@ -54,8 +60,7 @@ def processQuery(db, query):
 	return answer
 	
 def gps(req, buildingName='Sayles-Hill'):
-	"""A method to hopefully get information out of the sql database and print it on screen.
-	"""
+	"""A method to hopefully get information out of the sql database and print it on screen."""
 	database = getConnection()
 	buildingName = MySQLdb.escape_string(buildingName)
 	query = "SELECT * FROM landmarkTable WHERE name = '%s'" % buildingName
@@ -69,7 +74,9 @@ def gps(req, buildingName='Sayles-Hill'):
 	return "The building you asked for, %s, is at latitude %f and longitude %f" % (buildingName, lat, long)
 
 def SportingArenas(req, udid, lat='0', lon='0', maxLandmarks='10'):
-	"""If values aren't numbers, assumes 10, a number we discused
+	"""Returns landmarks that have been validated or voted 
+	on by the current user for the Sporting Arenas layer.
+	If values aren't numbers, assumes 10, a number we discused
         and that you are in Memorial Hall, since you can't pass decent GPS
         coordinates"""
 	database = getConnection()
@@ -79,7 +86,9 @@ def SportingArenas(req, udid, lat='0', lon='0', maxLandmarks='10'):
 	return answer
 
 def Carleton(req, udid = None, lat='0',lon='0',maxLandmarks='10'):
-	"""If values aren't numbers, assumes 10, a number we discussed
+	""""Returns landmarks that have been validated or voted
+         on by the current user for the Carleton layer.
+	If values aren't numbers, assumes 10, a number we discussed
 	and that you are in Memorial Hall, since you can't pass decent GPS
 	coordinates"""
 	database = getConnection() 
@@ -89,7 +98,9 @@ def Carleton(req, udid = None, lat='0',lon='0',maxLandmarks='10'):
 	return answer
 	
 def Food(req, udid, lat='0', lon='0', maxLandmarks='10'):
-	"""If values aren't numbers, assumes 10 for the value of maxLandmarks and assumes
+	""""Returns landmarks that have been validated or voted 
+        on by the current user for the Food ayer.
+	If values aren't numbers, assumes 10 for the value of maxLandmarks and assumes
 	 you are in memorial since you can't get decent gps there"""
 	database = getConnection()
 	udid, lat, lon, maxLandmarks = variableSetup(udid, lat, lon, maxLandmarks)

@@ -6,6 +6,8 @@ import dbConstants
 import json
 
 def getConnection():
+	"""A function that contains all the processing for connecting
+	to a database.  This returns the db so other functions can use it"""
 	db = MySQLdb.connect(host = dbConstants.host,
 		user = dbConstants.user, passwd = dbConstants.pw,
 		db = dbConstants.database)
@@ -17,6 +19,8 @@ def getConnection():
         return db
         
 def processQuery(db, query):
+	"""Proceses a SQL query using a given DB
+	Processes everything into a JSON Dictionary"""
 	resultsList = []
 	db.query(query)
 	result = db.store_result()
@@ -31,6 +35,9 @@ def processQuery(db, query):
 	return answer
 	
 def processVariables(latitude, longitude, threshold):
+	"""A function for processing variables to make sure everything
+	is the right type and not malicious by setting defaults
+	if the variable passed in isn't the right type"""
 	try:
 		threshold = int(threshold)
 	except ValueError:
@@ -46,7 +53,10 @@ def processVariables(latitude, longitude, threshold):
 	return latitude, longitude, threshold
 
 def processVariablesWithUDID(udid, latitude, longitude, threshold):
-    
+	"""A function for processing variables to make sure everything
+	is the right type and not malicious by setting defaults
+	if the variable passed in isn't the right type.
+	This mehtod also processes a UDID from a phone"""
 	#Process the udid to sanatize for the DB and confirm 40
 	#character length
 	if len(udid) != 40:
