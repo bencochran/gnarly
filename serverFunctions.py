@@ -2,7 +2,6 @@
 	serverFunctions.py
 	
 	Contents:
-				getConnection
 		A. Database Inserts and Updates 
 				DBUpdate
 				landmarkTableInsert
